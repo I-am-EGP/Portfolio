@@ -1,3 +1,7 @@
+# Jogo simples de arcade feito em Python onde o jogador precisa sobreviver a uma onda de asteroides pelo maior tempo possível
+
+# Simple arcade game made in Python were the player needs to survive a wave of asteroids for the longest time possible
+
 import asyncio
 import platform
 import pygame
