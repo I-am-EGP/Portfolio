@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PIQUE-DENGUE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a0033 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .game-container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            padding: 10px;
+        }
+
+        #menuScreen, #gameOverScreen, #victoryScreen, #pauseScreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border: 4px solid #00ffff;
+            border-radius: 20px;
+            box-shadow: 0 0 40px #00ffff, 0 0 80px #0066ff, inset 0 0 20px rgba(0, 255, 255, 0.2);
+            max-width: 90%;
+        }
+
+        #menuScreen.hidden, #gameOverScreen.hidden, #victoryScreen.hidden, #pauseScreen.hidden {
+            display: none;
+        }
+
+        #gameOverScreen {
+            border-color: #ff0000;
+            box-shadow: 0 0 40px #ff0000, 0 0 80px #ff0066, inset 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        #victoryScreen {
+            border-color: #00ff00;
+            box-shadow: 0 0 40px #00ff00, 0 0 80px #00ff66, inset 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        #pauseScreen {
+            border-color: #ffff00;
+            box-shadow: 0 0 40px #ffff00, 0 0 80px #ffcc00, inset 0 0 20px rgba(255, 255, 0, 0.2);
+        }
+
+        .menu-title {
+            font-size: clamp(2em, 8vw, 4em);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #ff00ff;
+            animation: pulse 2s ease-in-out infinite;
+            letter-spacing: 4px;
+        }
+
+        .game-over-title {
+            font-size: clamp(2em, 8vw, 4em);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0066;
+            animation: pulse 2s ease-in-out infinite;
+            letter-spacing: 4px;
+            color: #ff0000;
+        }
+
+        .victory-title {
+            font-size: clamp(2em, 8vw, 4em);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 60px #00ff66;
+            animation: pulse 2s ease-in-out infinite;
+            letter-spacing: 4px;
+            color: #00ff00;
+        }
+
+        .pause-title {
+            font-size: clamp(2em, 8vw, 4em);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00, 0 0 60px #ffcc00;
+            animation: pulse 2s ease-in-out infinite;
+            letter-spacing: 4px;
+            color: #ffff00;
+        }
+
+        .final-score {
+            font-size: clamp(1.2em, 4vw, 2em);
+            margin-bottom: 30px;
+            color: #ffffff;
+            text-shadow: 0 0 10px #ffffff;
+        }
+
+        .menu-subtitle {
+            font-size: clamp(0.9em, 3vw, 1.5em);
+            margin-bottom: 30px;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #00ffff 0%, #0066ff 100%);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: clamp(1.2em, 4vw, 1.8em);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00ffff, 0 0 40px #0066ff;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .play-button:hover, .play-button:active {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #00ffff, 0 0 60px #0066ff, 0 0 90px #ff00ff;
+        }
+
+        .end-game-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .end-game-btn {
+            background: linear-gradient(135deg, #00ffff 0%, #0066ff 100%);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: clamp(1em, 3.5vw, 1.4em);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00ffff, 0 0 40px #0066ff;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .end-game-btn:hover, .end-game-btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #00ffff, 0 0 60px #0066ff, 0 0 90px #ff00ff;
+        }
+
+        .end-game-btn.secondary {
+            background: linear-gradient(135deg, #ff00ff 0%, #ff0066 100%);
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff0066;
+        }
+
+        .end-game-btn.secondary:hover, .end-game-btn.secondary:active {
+            box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff0066;
+        }
+        
+        .end-game-btn.pause-btn {
+             background: linear-gradient(135deg, #ffff00 0%, #ffcc00 100%);
+             box-shadow: 0 0 20px #ffff00, 0 0 40px #ffcc00;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #ff00ff;
+            }
+            50% {
+                text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 90px #ff00ff;
+            }
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #ff00ff;
+            font-size: clamp(1.5em, 5vw, 2.5em);
+            letter-spacing: 3px;
+        }
+
+        .game-info {
+            margin-bottom: 10px;
+            font-size: clamp(0.9em, 3vw, 1.3em);
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        #gameCanvas {
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 20px #00ffff, 0 0 40px #0066ff;
+            background: #000;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            margin-top: 10px;
+            font-size: clamp(0.8em, 2.5vw, 1.1em);
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff00ff 0%, #ff0066 100%);
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #ff00ff;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover, .btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff00ff;
+        }
+        
+        .btn-pause-ingame {
+            background: linear-gradient(135deg, #ffff00 0%, #ffcc00 100%);
+            color: #000;
+            box-shadow: 0 0 15px #ffff00;
+        }
+        .btn-pause-ingame:hover {
+            box-shadow: 0 0 25px #ffff00;
+        }
+
+        .touch-controls {
+            display: none;
+            position: relative;
+            margin: 15px auto;
+            width: 200px;
+            height: 200px;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .touch-controls {
+                display: block;
+            }
+            .controls {
+                display: none;
+            }
+        }
+
+        .dpad {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .dpad-btn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00ffff 0%, #0066ff 100%);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px #00ffff;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+        }
+
+        .dpad-btn:active {
+            transform: scale(0.9);
+            box-shadow: 0 0 25px #00ffff, 0 0 40px #0066ff;
+        }
+
+        .dpad-up { top: 0; left: 70px; }
+        .dpad-down { bottom: 0; left: 70px; }
+        .dpad-left { top: 70px; left: 0; }
+        .dpad-right { top: 70px; right: 0; }
+        .dpad-center {
+            top: 70px;
+            left: 70px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .game-container { padding: 5px; }
+            #menuScreen { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="menuScreen">
+            <div class="menu-title">🦟 PIQUE-DENGUE 🦟</div>
+            <div class="menu-subtitle">Fuja dos mosquitos, colete pellets e use o BAYGON! 🟢</div>
+            <button class="play-button" onclick="startGame()">▶ JOGAR</button>
+        </div>
+
+        <div id="gameOverScreen" class="hidden">
+            <div class="game-over-title">💀 GAME OVER 💀</div>
+            <div class="menu-subtitle">Você foi picado pelo mosquito!</div>
+            <div class="final-score">Pontuação Final: <span id="final-score-gameover">0</span></div>
+            <div class="end-game-buttons">
+                <button class="end-game-btn" onclick="restartFromGameOver()">🔄 Jogar Novamente</button>
+                <button class="end-game-btn secondary" onclick="backToMenuFromGameOver()">🏠 Menu Principal</button>
+            </div>
+        </div>
+
+        <div id="victoryScreen" class="hidden">
+            <div class="victory-title">🎉 VOCÊ VENCEU! 🎉</div>
+            <div class="menu-subtitle">Todos os pellets coletados!</div>
+            <div class="final-score">Pontuação Final: <span id="final-score-victory">0</span></div>
+            <div class="end-game-buttons">
+                <button class="end-game-btn" onclick="restartFromVictory()">🔄 Jogar Novamente</button>
+                <button class="end-game-btn secondary" onclick="backToMenuFromVictory()">🏠 Menu Principal</button>
+            </div>
+        </div>
+
+        <div id="pauseScreen" class="hidden">
+            <div class="pause-title">⏸️ PAUSADO ⏸️</div>
+            <div class="menu-subtitle">Jogo paralisado. Respire fundo!</div>
+            <div class="end-game-buttons">
+                <button class="end-game-btn pause-btn" onclick="game.togglePause()">▶ Continuar</button>
+                <button class="end-game-btn secondary" onclick="backToMenuFromPause()">🏠 Menu Principal</button>
+            </div>
+        </div>
+
+        <div id="gameScreen" style="display: none;">
+            <h1>🦟 PIQUE-DENGUE 🦟</h1>
+            <div class="game-info">
+                <span>Pontos: <span id="score">0</span></span> | 
+                <span>Vidas: <span id="lives">3</span></span> |
+                <span>Pellets: <span id="pellets-remaining">0</span></span> |
+                <span id="powerup-status" style="color: #00ff00;"></span>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="touch-controls">
+                <div class="dpad">
+                    <div class="dpad-btn dpad-up" data-direction="up">▲</div>
+                    <div class="dpad-btn dpad-left" data-direction="left">◀</div>
+                    <div class="dpad-center"></div>
+                    <div class="dpad-btn dpad-right" data-direction="right">▶</div>
+                    <div class="dpad-btn dpad-down" data-direction="down">▼</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                Use as setas ⬆️ ⬇️ ⬅️ ➡️ ou WASD para mover
+            </div>
+            <div class="button-container">
+                <button class="btn btn-pause-ingame" onclick="game.togglePause()">⏸️ Pause</button>
+                <button class="btn" onclick="game.restart()">🔄 Reiniciar</button>
+                <button class="btn" onclick="backToMenu()">🏠 Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const GRID_WIDTH = 28;
+        const GRID_HEIGHT = 31;
+        let TILE_SIZE;
+        
+        const COLORS = {
+            background: '#000000',
+            wall: '#0066ff',
+            wallGlow: '#00ffff',
+            player: '#00ffff',
+            playerGlow: '#ffffff',
+            pellet: '#ffffff',
+            mosquito: '#ff0000',
+            mosquitoGlow: '#ff6666',
+            mosquitoWing: '#ffcccc',
+            mosquitoScared: '#ffffff',
+            mosquitoScaredGlow: '#cccccc',
+            powerup: '#00ff00',
+            powerupGlow: '#00ff00',
+        };
+
+        const MAZE_MAP_TEMPLATE = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+            [1,3,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,3,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1],
+            [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
+            [1,1,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1],
+            [1,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,1],
+            [1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1],
+            [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,2,1,2,1,1,1,1,2,1,2,1,1,2,1,1,1,1,2,1],
+            [1,2,1,2,2,1,2,1,1,2,1,2,2,2,2,2,2,1,2,1,1,2,1,2,2,1,2,1],
+            [1,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,1],
+            [1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1],
+            [1,2,2,2,2,1,2,1,1,2,1,2,2,2,2,2,2,1,2,1,1,2,1,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,2,1,2,1,1,1,1,2,1,2,1,1,2,1,1,1,1,2,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+            [1,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,1],
+            [1,1,1,2,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,2,1,1,1],
+            [1,2,2,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,1,1,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
+            [1,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,1],
+            [1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,2,1,1,1],
+            [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+            [1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        class Mosquito {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.startX = x;
+                this.startY = y;
+                this.visionRange = 8;
+                this.wingAngle = 0;
+                this.wingSpeed = 0.3;
+                this.mode = 'wander';
+                this.moveTimer = 0;
+                this.moveDelay = 12;
+                this.currentDirection = null;
+                this.lastPositions = [];
+                this.directionChangeTimer = 0;
+                this.directionChangeCooldown = Math.floor(Math.random() * 20) + 15;
+                this.scared = false;
+                this.dead = false;
+                this.respawnTimer = 0;
+            }
+
+            canMove(newX, newY, maze) {
+                if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) return false;
+                return maze[newY][newX] !== 1;
+            }
+
+            canSeePlayer(player) {
+                const dx = player.x - this.x;
+                const dy = player.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return distance < this.visionRange;
+            }
+
+            isInLoop() {
+                if (this.lastPositions.length < 6) return false;
+                const recent = this.lastPositions.slice(-6);
+                const uniquePositions = new Set(recent.map(p => `${p.x},${p.y}`));
+                return uniquePositions.size <= 3;
+            }
+
+            getOppositeDirection(dir) {
+                if (!dir) return null;
+                return { x: -dir.x, y: -dir.y };
+            }
+
+            findBestMove(targetX, targetY, maze, avoidOpposite = false) {
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                
+                const directions = [
+                    { x: 0, y: -1, priority: dy < 0 ? Math.abs(dy) : 0 },
+                    { x: 0, y: 1, priority: dy > 0 ? Math.abs(dy) : 0 },
+                    { x: -1, y: 0, priority: dx < 0 ? Math.abs(dx) : 0 },
+                    { x: 1, y: 0, priority: dx > 0 ? Math.abs(dx) : 0 }
+                ];
+
+                const opposite = avoidOpposite ? this.getOppositeDirection(this.currentDirection) : null;
+                directions.sort((a, b) => b.priority - a.priority);
+
+                for (let dir of directions) {
+                    if (opposite && dir.x === opposite.x && dir.y === opposite.y) continue;
+                    const newX = this.x + dir.x;
+                    const newY = this.y + dir.y;
+                    if (this.canMove(newX, newY, maze)) return dir;
+                }
+
+                for (let dir of directions) {
+                    const newX = this.x + dir.x;
+                    const newY = this.y + dir.y;
+                    if (this.canMove(newX, newY, maze)) return dir;
+                }
+
+                return null;
+            }
+
+            chooseRandomDirection(maze, avoidOpposite = true) {
+                const directions = [
+                    { x: 0, y: -1 }, { x: 0, y: 1 },
+                    { x: -1, y: 0 }, { x: 1, y: 0 }
+                ];
+
+                const opposite = avoidOpposite ? this.getOppositeDirection(this.currentDirection) : null;
+                
+                let validMoves = directions.filter(dir => {
+                    if (opposite && dir.x === opposite.x && dir.y === opposite.y) return false;
+                    return this.canMove(this.x + dir.x, this.y + dir.y, maze);
+                });
+
+                if (validMoves.length === 0) {
+                    validMoves = directions.filter(dir => 
+                        this.canMove(this.x + dir.x, this.y + dir.y, maze)
+                    );
+                }
+                
+                if (validMoves.length > 0) {
+                    return validMoves[Math.floor(Math.random() * validMoves.length)];
+                }
+                
+                return null;
+            }
+
+            update(player, maze) {
+                this.wingAngle += this.wingSpeed;
+                
+                if (this.dead) {
+                    this.respawnTimer++;
+                    if (this.respawnTimer >= 600) {
+                        this.dead = false;
+                        this.respawnTimer = 0;
+                        this.scared = false;
+                        this.x = this.startX;
+                        this.y = this.startY;
+                    }
+                    return;
+                }
+                
+                this.moveTimer++;
+                this.directionChangeTimer++;
+                
+                if (this.moveTimer < this.moveDelay) return;
+                
+                this.moveTimer = 0;
+                
+                this.lastPositions.push({ x: this.x, y: this.y });
+                if (this.lastPositions.length > 8) this.lastPositions.shift();
+
+                let moved = false;
+
+                if (this.scared) {
+                    this.mode = 'flee';
+                    const dx = this.x - player.x;
+                    const dy = this.y - player.y;
+                    const move = this.findBestMove(this.x + Math.sign(dx) * 3, this.y + Math.sign(dy) * 3, maze, true);
+                    if (move) {
+                        this.x += move.x;
+                        this.y += move.y;
+                        this.currentDirection = move;
+                        moved = true;
+                    }
+                } else if (this.canSeePlayer(player)) {
+                    this.mode = 'chase';
+                    const move = this.findBestMove(player.x, player.y, maze, true);
+                    if (move) {
+                        this.x += move.x;
+                        this.y += move.y;
+                        this.currentDirection = move;
+                        moved = true;
+                    }
+                } else {
+                    this.mode = 'wander';
+                    const inLoop = this.isInLoop();
+                    const shouldChangeDirection = this.directionChangeTimer >= this.directionChangeCooldown;
+                    
+                    if (inLoop || shouldChangeDirection || !this.currentDirection) {
+                        this.currentDirection = this.chooseRandomDirection(maze, true);
+                        this.directionChangeTimer = 0;
+                        this.directionChangeCooldown = Math.floor(Math.random() * 20) + 15;
+                    }
+                    
+                    if (this.currentDirection) {
+                        const newX = this.x + this.currentDirection.x;
+                        const newY = this.y + this.currentDirection.y;
+                        
+                        if (this.canMove(newX, newY, maze)) {
+                            this.x = newX;
+                            this.y = newY;
+                            moved = true;
+                        } else {
+                            const perpendicular = [];
+                            if (this.currentDirection.x !== 0) {
+                                perpendicular.push({ x: 0, y: -1 }, { x: 0, y: 1 });
+                            } else {
+                                perpendicular.push({ x: -1, y: 0 }, { x: 1, y: 0 });
+                            }
+                            
+                            perpendicular.sort(() => Math.random() - 0.5);
+                            
+                            for (let dir of perpendicular) {
+                                const altX = this.x + dir.x;
+                                const altY = this.y + dir.y;
+                                if (this.canMove(altX, altY, maze)) {
+                                    this.x = altX;
+                                    this.y = altY;
+                                    this.currentDirection = dir;
+                                    moved = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!moved) this.currentDirection = this.chooseRandomDirection(maze, false);
+                        }
+                    }
+                }
+
+                if (!moved && this.currentDirection) {
+                    if (this.canMove(this.x + this.currentDirection.x, this.y + this.currentDirection.y, maze)) {
+                        this.x += this.currentDirection.x;
+                        this.y += this.currentDirection.y;
+                    }
+                }
+            }
+
+            draw(ctx, tileSize) {
+                if (this.dead) return;
+                
+                const px = this.x * tileSize + tileSize / 2;
+                const py = this.y * tileSize + tileSize / 2;
+                const bodyRadius = tileSize / 2;
+                const wingLength = tileSize * 0.7;
+
+                const bodyColor = this.scared ? COLORS.mosquitoScared : COLORS.mosquito;
+                const glowColor = this.scared ? COLORS.mosquitoScaredGlow : COLORS.mosquitoGlow;
+
+                ctx.save();
+                ctx.translate(px, py);
+                
+                ctx.save();
+                ctx.rotate(Math.sin(this.wingAngle) * 0.5 - 0.3);
+                ctx.fillStyle = COLORS.mosquitoWing;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = COLORS.mosquitoWing;
+                ctx.beginPath();
+                ctx.ellipse(-bodyRadius * 0.8, 0, wingLength, wingLength * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.rotate(-Math.sin(this.wingAngle) * 0.5 + 0.3);
+                ctx.fillStyle = COLORS.mosquitoWing;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = COLORS.mosquitoWing;
+                ctx.beginPath();
+                ctx.ellipse(bodyRadius * 0.8, 0, wingLength, wingLength * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.restore();
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = glowColor;
+                ctx.fillStyle = bodyColor;
+                ctx.beginPath();
+                ctx.arc(px, py, bodyRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (this.mode === 'chase') {
+                    ctx.shadowBlur = 8;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(px - bodyRadius * 0.35, py - bodyRadius * 0.25, bodyRadius * 0.25, 0, Math.PI * 2);
+                    ctx.arc(px + bodyRadius * 0.35, py - bodyRadius * 0.25, bodyRadius * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.scared) {
+                    ctx.shadowBlur = 8;
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(px - bodyRadius * 0.35, py - bodyRadius * 0.25, bodyRadius * 0.2, 0, Math.PI * 2);
+                    ctx.arc(px + bodyRadius * 0.35, py - bodyRadius * 0.25, bodyRadius * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        const game = {
+            maze: [],
+            player: { x: 14, y: 15 },
+            playerStartX: 14,
+            playerStartY: 15,
+            mosquitos: [],
+            score: 0,
+            lives: 3,
+            pelletsRemaining: 0,
+            keys: {},
+            lastMoveTime: 0,
+            moveDelay: 100,
+            gameOver: false,
+            powerupActive: false,
+            powerupTimer: 0,
+            powerupDuration: 600,
+            isPaused: false,
+            invulnerable: false,
+            invulnerableTimer: 0,
+            invulnerableDuration: 180,
+            isDying: false,
+            deathTimer: 0,
+            deathDuration: 300,
+            
+            init() {
+                this.maze = JSON.parse(JSON.stringify(MAZE_MAP_TEMPLATE));
+                this.player = { x: this.playerStartX, y: this.playerStartY };
+                this.score = 0;
+                this.lives = 3;
+                this.keys = {};
+                this.lastMoveTime = 0;
+                this.gameOver = false;
+                this.isPaused = false;
+                this.powerupActive = false;
+                this.powerupTimer = 0;
+                this.invulnerable = false;
+                this.invulnerableTimer = 0;
+                this.isDying = false;
+                this.deathTimer = 0;
+                this.countPellets();
+                this.createMosquitos();
+                this.updateDisplay();
+            },
+
+            togglePause() {
+                if (this.gameOver || this.isDying) return;
+                this.isPaused = !this.isPaused;
+                const pauseScreen = document.getElementById('pauseScreen');
+                if (this.isPaused) {
+                    pauseScreen.classList.remove('hidden');
+                } else {
+                    pauseScreen.classList.add('hidden');
+                }
+            },
+
+            createMosquitos() {
+                this.mosquitos = [];
+                const spawnPoints = [
+                    { x: 1, y: 1 }, { x: 26, y: 1 },
+                    { x: 1, y: 29 }, { x: 26, y: 29 },
+                    { x: 14, y: 23 }
+                ];
+                spawnPoints.forEach(point => {
+                    this.mosquitos.push(new Mosquito(point.x, point.y));
+                });
+            },
+
+            countPellets() {
+                this.pelletsRemaining = 0;
+                for (let y = 0; y < GRID_HEIGHT; y++) {
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        if (this.maze[y][x] === 2) this.pelletsRemaining++;
+                    }
+                }
+            },
+
+            updateDisplay() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('lives').textContent = this.lives;
+                document.getElementById('pellets-remaining').textContent = this.pelletsRemaining;
+                
+                const powerupStatus = document.getElementById('powerup-status');
+                if (this.powerupActive) {
+                    const secondsLeft = Math.ceil(this.powerupTimer / 60);
+                    powerupStatus.textContent = `🟢 BAYGON: ${secondsLeft}s`;
+                } else {
+                    powerupStatus.textContent = '';
+                }
+            },
+            
+            movePlayer(dx, dy) {
+                if (this.gameOver || this.isPaused || this.isDying) return;
+
+                const newX = this.player.x + dx;
+                const newY = this.player.y + dy;
+                
+                let finalX = newX;
+                let finalY = newY;
+
+                if (newY === 8 && newX < 0) {
+                    finalX = GRID_WIDTH - 1;
+                } else if (newY === 8 && newX >= GRID_WIDTH) {
+                    finalX = 0;
+                }
+                
+                if (finalX >= 0 && finalX < GRID_WIDTH && finalY >= 0 && finalY < GRID_HEIGHT) {
+                    const tile = this.maze[finalY][finalX];
+                    
+                    if (tile !== 1) {
+                        this.player.x = finalX;
+                        this.player.y = finalY;
+                        
+                        if (tile === 2) {
+                            this.score += 10;
+                            this.pelletsRemaining--;
+                            this.maze[finalY][finalX] = 0;
+                            
+                            if (this.pelletsRemaining === 0) {
+                                this.gameOver = true;
+                                this.showVictoryScreen();
+                            }
+                        } else if (tile === 3) {
+                            this.score += 50;
+                            this.maze[finalY][finalX] = 0;
+                            this.activatePowerup();
+                        }
+                        
+                        this.updateDisplay();
+                    }
+                }
+            },
+
+            activatePowerup() {
+                this.powerupActive = true;
+                this.powerupTimer = this.powerupDuration;
+                this.mosquitos.forEach(m => {
+                    if (!m.dead) m.scared = true;
+                });
+            },
+
+            checkCollisions() {
+                if (this.gameOver || this.isPaused || this.invulnerable || this.isDying) return;
+
+                for (let mosquito of this.mosquitos) {
+                    if (mosquito.dead) continue;
+                    
+                    if (mosquito.x === this.player.x && mosquito.y === this.player.y) {
+                        if (mosquito.scared && this.powerupActive) {
+                            mosquito.dead = true;
+                            mosquito.respawnTimer = 0;
+                            this.score += 200;
+                            this.updateDisplay();
+                        } else if (!mosquito.scared) {
+                            this.lives--;
+                            this.updateDisplay();
+                            
+                            if (this.lives <= 0) {
+                                this.gameOver = true;
+                                this.showGameOverScreen();
+                            } else {
+                                this.isDying = true;
+                                this.deathTimer = this.deathDuration;
+                            }
+                            break;
+                        }
+                    }
+                }
+            },
+
+            showGameOverScreen() {
+                document.getElementById('final-score-gameover').textContent = this.score;
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+            },
+
+            showVictoryScreen() {
+                document.getElementById('final-score-victory').textContent = this.score;
+                document.getElementById('victoryScreen').classList.remove('hidden');
+            },
+            
+            restart() {
+                document.getElementById('pauseScreen').classList.add('hidden');
+                this.init();
+            },
+            
+            draw() {
+                ctx.fillStyle = COLORS.background;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                for (let y = 0; y < GRID_HEIGHT; y++) {
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        const tile = this.maze[y][x];
+                        const px = x * TILE_SIZE;
+                        const py = y * TILE_SIZE;
+                        
+                        if (tile === 1) {
+                            ctx.strokeStyle = COLORS.wallGlow;
+                            ctx.lineWidth = 2;
+                            ctx.shadowBlur = TILE_SIZE / 2;
+                            ctx.shadowColor = COLORS.wallGlow;
+                            ctx.strokeRect(px + 0.5, py + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
+                            ctx.shadowBlur = 0;
+                        } else if (tile === 2) {
+                            ctx.fillStyle = COLORS.pellet;
+                            ctx.shadowBlur = 8;
+                            ctx.shadowColor = COLORS.pellet;
+                            ctx.beginPath();
+                            ctx.arc(px + TILE_SIZE / 2, py + TILE_SIZE / 2, TILE_SIZE / 6, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                        } else if (tile === 3) {
+                            ctx.fillStyle = COLORS.powerup;
+                            ctx.shadowBlur = 15;
+                            ctx.shadowColor = COLORS.powerupGlow;
+                            ctx.fillRect(px + TILE_SIZE * 0.2, py + TILE_SIZE * 0.2, TILE_SIZE * 0.6, TILE_SIZE * 0.6);
+                            ctx.shadowBlur = 0;
+                        }
+                    }
+                }
+
+                for (let mosquito of this.mosquitos) {
+                    mosquito.draw(ctx, TILE_SIZE);
+                }
+
+                if (!this.isDying && (!this.invulnerable || Math.floor(this.invulnerableTimer / 10) % 2 === 0)) {
+                    const playerPx = this.player.x * TILE_SIZE;
+                    const playerPy = this.player.y * TILE_SIZE;
+                    
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = COLORS.playerGlow;
+                    ctx.fillStyle = COLORS.player;
+                    ctx.beginPath();
+                    ctx.arc(playerPx + TILE_SIZE / 2, playerPy + TILE_SIZE / 2, TILE_SIZE / 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                if (this.isDying) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    const secondsLeft = Math.ceil(this.deathTimer / 60);
+                    
+                    ctx.fillStyle = '#ff0000';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ff0000';
+                    ctx.font = `bold ${TILE_SIZE * 1.5}px 'Courier New', monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('💀 PICADO! 💀', canvas.width / 2, canvas.height / 2 - TILE_SIZE * 2);
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = '#ffffff';
+                    ctx.font = `bold ${TILE_SIZE * 1.2}px 'Courier New', monospace`;
+                    ctx.fillText(`Respawn em: ${secondsLeft}s`, canvas.width / 2, canvas.height / 2 + TILE_SIZE);
+                    
+                    ctx.fillStyle = '#00ffff';
+                    ctx.shadowColor = '#00ffff';
+                    ctx.font = `bold ${TILE_SIZE * 0.9}px 'Courier New', monospace`;
+                    ctx.fillText(`Vidas restantes: ${this.lives}`, canvas.width / 2, canvas.height / 2 + TILE_SIZE * 2.5);
+                    
+                    ctx.shadowBlur = 0;
+                }
+            },
+
+            update(currentTime) {
+                if (this.gameOver || this.isPaused) return;
+
+                if (this.isDying) {
+                    this.deathTimer--;
+                    if (this.deathTimer <= 0) {
+                        this.isDying = false;
+                        this.player.x = this.playerStartX;
+                        this.player.y = this.playerStartY;
+                        this.invulnerable = true;
+                        this.invulnerableTimer = this.invulnerableDuration;
+                    }
+                    return;
+                }
+
+                if (this.invulnerable) {
+                    this.invulnerableTimer--;
+                    if (this.invulnerableTimer <= 0) this.invulnerable = false;
+                }
+
+                if (this.powerupActive) {
+                    this.powerupTimer--;
+                    if (this.powerupTimer <= 0) {
+                        this.powerupActive = false;
+                        this.mosquitos.forEach(m => {
+                            if (!m.dead) m.scared = false;
+                        });
+                    }
+                    if (this.powerupTimer % 6 === 0) this.updateDisplay();
+                }
+
+                for (let mosquito of this.mosquitos) {
+                    mosquito.update(this.player, this.maze);
+                }
+
+                this.checkCollisions();
+
+                if (currentTime - this.lastMoveTime >= this.moveDelay) {
+                    let moved = false;
+                    
+                    if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) {
+                        this.movePlayer(0, -1);
+                        moved = true;
+                    } else if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) {
+                        this.movePlayer(0, 1);
+                        moved = true;
+                    } else if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
+                        this.movePlayer(-1, 0);
+                        moved = true;
+                    } else if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
+                        this.movePlayer(1, 0);
+                        moved = true;
+                    }
+                    
+                    if (moved) this.lastMoveTime = currentTime;
+                }
+            },
+
+            gameLoop(currentTime) {
+                game.update(currentTime);
+                game.draw();
+                requestAnimationFrame(game.gameLoop.bind(game));
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (key === 'p' || key === 'P' || key === 'Escape') {
+                game.togglePause();
+            }
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D'].includes(key)) {
+                e.preventDefault();
+                game.keys[key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D'].includes(key)) {
+                game.keys[key] = false;
+            }
+        });
+
+        const dpadButtons = document.querySelectorAll('.dpad-btn');
+        dpadButtons.forEach(btn => {
+            ['touchstart', 'mousedown'].forEach(evt => {
+                btn.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    const dir = btn.dataset.direction;
+                    const keyMap = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+                    game.keys[keyMap[dir]] = true;
+                });
+            });
+            
+            ['touchend', 'mouseup'].forEach(evt => {
+                btn.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    const dir = btn.dataset.direction;
+                    const keyMap = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+                    game.keys[keyMap[dir]] = false;
+                });
+            });
+        });
+
+        function resizeAndDraw() {
+            const isMobile = window.innerWidth < 600;
+            const maxWidth = isMobile ? window.innerWidth * 0.95 : window.innerWidth * 0.85;
+            const maxHeight = isMobile ? window.innerHeight * 0.45 : window.innerHeight * 0.6;
+            
+            const tileW = maxWidth / GRID_WIDTH;
+            const tileH = maxHeight / GRID_HEIGHT;
+            TILE_SIZE = Math.min(tileW, tileH);
+            
+            canvas.width = TILE_SIZE * GRID_WIDTH;
+            canvas.height = TILE_SIZE * GRID_HEIGHT;
+            
+            game.draw();
+        }
+
+        let gameLoopRunning = false;
+
+        function startGame() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').style.display = 'block';
+            game.init();
+            resizeAndDraw();
+            if (!gameLoopRunning) {
+                gameLoopRunning = true;
+                requestAnimationFrame(game.gameLoop.bind(game));
+            }
+        }
+
+        function backToMenu() {
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('pauseScreen').classList.add('hidden');
+            game.keys = {};
+            gameLoopRunning = false;
+        }
+
+        function restartFromGameOver() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            game.restart();
+        }
+
+        function backToMenuFromGameOver() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').style.display = 'none';
+            game.keys = {};
+        }
+
+        function restartFromVictory() {
+            document.getElementById('victoryScreen').classList.add('hidden');
+            game.restart();
+        }
+
+        function backToMenuFromVictory() {
+            document.getElementById('victoryScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').style.display = 'none';
+            game.keys = {};
+        }
+
+        function backToMenuFromPause() {
+            document.getElementById('pauseScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').style.display = 'none';
+            game.keys = {};
+            game.isPaused = false;
+        }
+
+        window.addEventListener('load', () => resizeAndDraw());
+        window.addEventListener('resize', resizeAndDraw);
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
