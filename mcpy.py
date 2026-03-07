@@ -1,3 +1,7 @@
+# Clone simples de Minecraft criado em Python usando Panda3D, inspirado nas primeiras versões do jogo original
+
+# Simple Minecraft clone created in Python using Panda3D inspired by the early versions of the original game
+
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import *
 from direct.task import Task
