@@ -1,3 +1,7 @@
+# Clone simples de Galaga feito em Python como projeto paralelo
+
+# Simple Galaga clone made in Python as a side project
+
 import pygame
 import random
 import asyncio
