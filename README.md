@@ -8,6 +8,8 @@ Embora sejam projetos de pequeno porte, todos foram concebidos com um objetivo c
 
 Convido-o a explorar os projetos, conhecer as tecnologias envolvidas e acompanhar a minha evolução. Estou sempre aberto a feedback, colaborações e novas oportunidades de aprendizagem.
 
+===============================================================================================================================
+
 Welcome to my Personal Portfolio
 
 This space reunites the projects that I developed during my learning journey in the tech field. Each work presented here represents a concrete step of my evolution, from the first experiments to more structured solutions, and it reflects the skills, tools and good practices that I've acquired and consolidated throughout the journey.
