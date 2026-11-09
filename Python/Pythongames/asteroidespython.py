@@ -1,8 +1,8 @@
 # Jogo simples de arcade feito em Python onde o jogador precisa sobreviver a uma onda de asteroides pelo maior tempo possível
-# Certifique-se de que o modulo pygame esteja instalado para que o jogo rode como esperado
+# Certifique-se de que o pygame esteja instalado para que o jogo rode como esperado
 
 # Simple arcade game made in Python were the player needs to survive a wave of asteroids for the longest time possible
-# Make sure that the pygame module is installed in order for the game to run as expected
+# Make sure that pygame is installed in order for the game to run as expected
 
 import asyncio
 import platform
