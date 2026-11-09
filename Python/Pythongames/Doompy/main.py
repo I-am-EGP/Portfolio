@@ -1,5 +1,8 @@
 # Um clone simples de Doom Classico feito em Python com Panda3D e Ursina
+# Certifique-se de que Panda3D e Ursina estejam instalados para que o jogo rode como esperado
+
 # A simple Classic Doom clone made in Python with Panda3D and Ursina
+# Make sure that Panda3D and Ursina are installed in order for the game to run as expected
 
 from ursina import *
 from game import DoomGame
