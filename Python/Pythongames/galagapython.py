@@ -1,8 +1,8 @@
 # Clone simples de Galaga feito em Python como projeto paralelo
-# Certifique-se de que o pygame esteja instalado para que o jogo rode como esperado
+# Certifique-se de que o pygame-ce esteja instalado para que o jogo rode como esperado
 
 # Simple Galaga clone made in Python as a side project
-# Make sure that pygame is installed in order for the game to run as expected
+# Make sure that pygame-ce is installed in order for the game to run as expected
 
 import pygame
 import random
